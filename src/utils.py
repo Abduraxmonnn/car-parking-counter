@@ -7,8 +7,9 @@ class Park_classifier():
     """It just uses digital image process methods instead of deep learning to classify the parking space is empty or not.
     """
 
-    def __init__(self, carp_park_positions_path: pickle, rect_width: int = None, rect_height: int = None):
-        self.car_park_positions = self._read_positions(carp_park_positions_path)
+    def __init__(self, car_park_positions_path: pickle, rect_width: int = None, rect_height: int = None):
+        self.car_park_positions = self._read_positions(car_park_positions_path)
+        self.car_park_positions_status = [False] * len(self.car_park_positions)
         self.rect_height = 40 if rect_height is None else rect_height
         self.rect_width = 100 if rect_width is None else rect_width
 
@@ -65,6 +66,10 @@ class Park_classifier():
             start_point, stop_point = (x, y), (x + self.rect_width, y + self.rect_height)
             cv2.rectangle(image, start_point, stop_point, color, thick)
 
+        for idx, pos in enumerate(self.car_park_positions):
+            # Mock classification: alternate status for demonstration
+            self.car_park_positions_status[idx] = idx % 2 == 0
+
         # drawing the legend rectangle where on the tıo left side of the image
         cv2.rectangle(image, (45, 30), (250, 75), (180, 0, 180), -1)
 
@@ -105,6 +110,14 @@ class Park_classifier():
         dilate = cv2.dilate(blur, kernel_size, iterations=1)
 
         return dilate
+
+    def load_positions(self, path):
+        # Code to load car park positions from a file
+        pass
+
+    def is_occupied(self, index):
+        # Method to determine if a parking spot is occupied
+        return self.car_park_positions_status[index]
 
 
 class Coordinate_denoter():

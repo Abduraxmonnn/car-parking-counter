@@ -8,43 +8,36 @@ def demostration(
         rectangle_height: int = 10
 ):
     """
-    It is the demonstration of the car_park_coordinate_generatorçpy .
+    It is the demonstration of the car_park_coordinate_generator.
     """
 
     # creating the Coordinate_generator instance for extracting the car park coordinates
     coordinate_generator = Coordinate_denoter()
 
-    # reading and initialing the coordinates 
+    # reading and initialing the coordinates
     coordinate_generator.read_positions()
 
     # setting the initial variables
     image_path = "data/source/example_image.png"
-    # rect_width, rect_height = coordinate_generator.rect_width, coordinate_generator.rect_height
-    rect_width, rect_height = (rectangle_width, rectangle_height) if horizontal is True else (rectangle_height, rectangle_width)
+    rect_width, rect_height = (rectangle_width, rectangle_height) if horizontal else (rectangle_height, rectangle_width)
 
     # serving the GUI window until user terminates it
     while True:
-
         # refreshing the image
         image = cv2.imread(image_path)
 
-        # for pos in coordinate_generator.car_park_positions:
-        #     # defning the boundaries
-        #     print('POS: ', pos)
-        #     start = pos
-        #     end = (pos[0] + rect_width, pos[1] + rect_height)
-        #
-        #     # drawing the rectangle into the image
-        #     cv2.rectangle(image, start, end, (0, 0, 255), 2)
-
-        # drawing the current car park coordinates
-        for pos in coordinate_generator.car_park_positions:
-            # defning the boundaries
+        # drawing the current car park coordinates with index
+        for idx, pos in enumerate(coordinate_generator.car_park_positions):
+            # defining the boundaries
             start = pos
             end = (pos[0] + rect_width, pos[1] + rect_height)
 
             # drawing the rectangle into the image
             cv2.rectangle(image, start, end, (0, 0, 255), 2)
+
+            # putting the index near the rectangle
+            text_position = (start[0], start[1] - 10)  # Adjust as needed for better visibility
+            cv2.putText(image, f'{idx + 1}', text_position, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
 
         cv2.imshow("Image", image)
 
@@ -60,4 +53,4 @@ def demostration(
 
 
 if __name__ == "__main__":
-    demostration(horizontal=True, rectangle_width=100, rectangle_height=40)
+    demostration(horizontal=True, rectangle_width=80, rectangle_height=40)
