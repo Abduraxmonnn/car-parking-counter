@@ -9,9 +9,9 @@ def demostration():
     """
 
     # defining the params
-    rect_width, rect_height = 55, 25
+    rect_width, rect_height = 90, 40
     carp_park_positions_path = "data/source/CarParkPos"
-    video_path = "data/source/carPark.mp4"
+    video_path = "data/source/carPark old 1.mp4"
 
     # creating the classifier  instance which uses basic image processes to classify
     classifier = Park_classifier(carp_park_positions_path, rect_width, rect_height)

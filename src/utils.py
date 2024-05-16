@@ -9,8 +9,8 @@ class Park_classifier():
 
     def __init__(self, carp_park_positions_path: pickle, rect_width: int = None, rect_height: int = None):
         self.car_park_positions = self._read_positions(carp_park_positions_path)
-        self.rect_height = 48 if rect_height is None else rect_height
-        self.rect_width = 107 if rect_width is None else rect_width
+        self.rect_height = 40 if rect_height is None else rect_height
+        self.rect_width = 100 if rect_width is None else rect_width
 
     def _read_positions(self, car_park_positions_path: pickle) -> list:
         """It reads the pickle file for avoid any data corraption or mistake.
@@ -127,7 +127,6 @@ class Coordinate_denoter():
 
         try:
             self.car_park_positions = pickle.load(open(self.car_park_positions_path, 'rb'))
-            print('POS: ', self.car_park_positions)
         except Exception as e:
             print(f"Error: {e}\n It raised while reading the car park positions file.")
 
@@ -152,7 +151,6 @@ class Coordinate_denoter():
 
         # add car park position to the list 
         if events == cv2.EVENT_LBUTTONDOWN:
-            print('POS: ', (x, y))
             self.car_park_positions.append((x, y))
 
         # remove car park corresonding mouse click
