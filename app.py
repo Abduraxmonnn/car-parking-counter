@@ -1,6 +1,4 @@
 import cv2
-import numpy as np
-import pickle
 from src.utils import Park_classifier
 
 
@@ -47,10 +45,10 @@ def run():
 
             # putting the index near the rectangle
             text_position = (start[0], start[1] - 10)  # Adjust as needed for better visibility
-            cv2.putText(frame, f'{idx + 1}', text_position, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+            cv2.putText(frame, f'{idx + 1}', text_position, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
         # displaying the results
-        cv2.imshow("Car Park Image which drawn According to empty or occupied", frame)
+        cv2.imshow("Car Park Image which drawn", frame)
 
         # exit condition
         k = cv2.waitKey(1)
@@ -58,7 +56,7 @@ def run():
             break
 
         if k & 0xFF == ord('s'):
-            cv2.imwrite("output.jpg", frame)
+            cv2.imwrite("data/images/output.jpg", frame)
 
     # re-allocating sources
     cap.release()

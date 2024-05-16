@@ -37,7 +37,7 @@ def demostration(
 
             # putting the index near the rectangle
             text_position = (start[0], start[1] - 10)  # Adjust as needed for better visibility
-            cv2.putText(image, f'{idx + 1}', text_position, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+            cv2.putText(image, f'{idx + 1}', text_position, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
         cv2.imshow("Image", image)
 
