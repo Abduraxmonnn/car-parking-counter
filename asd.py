@@ -1,12 +1,17 @@
 import cv2
 import numpy as np
-from keras.models import load_model
+import threading
+import time
+from tensorflow.keras.models import load_model
 from src.utils import Park_classifier
 
 
-def preprocess_input_frame(input_frame, target_size=(180, 180)):
-    # Resize the frame and preprocess for model input
-    resized_frame = cv2.resize(input_frame, target_size)
+def preprocess_input_frame(input_frame, position, target_size=(180, 180)):
+    # Crop the frame to the specified parking spot area
+    x, y = position
+    crop_frame = input_frame[y:y + 40, x:x + 90]  # Adjust these values if rect_width and rect_height change
+    # Resize the cropped frame to match the model's input size
+    resized_frame = cv2.resize(crop_frame, target_size)
     resized_frame = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
     resized_frame = np.expand_dims(resized_frame, axis=0)
     resized_frame = resized_frame / 255.0
@@ -19,82 +24,118 @@ def load_trained_model(model_path):
     return model
 
 
-def run(video_path, model_path):
-    """
-    It is a demonstration of the application.
-    """
+def update_status(classifier, model, status_list, frame_lock, frame, interval_seconds, group):
+    while True:
+        with frame_lock:
+            positions = classifier.car_park_positions
+            half = len(positions) // 2
+            if group == 0:
+                positions_to_process = positions[:half]
+            else:
+                positions_to_process = positions[half:]
 
-    # defining the params
+            for idx, pos in enumerate(positions_to_process):
+                # Preprocess the frame for model input
+                input_frame = preprocess_input_frame(frame, pos)
+
+                # Make predictions using the model
+                predictions = model.predict(input_frame)
+
+                # Determine the predicted class based on the prediction
+                status_list[idx + group * half] = "Occupied" if predictions[0][0] > 0.5 else "Empty"
+
+        time.sleep(interval_seconds)
+
+
+def run(video_path, model_path, car_positions_path, interval_seconds=3):
+    # Define the parameters
     rect_width, rect_height = 90, 40
-    car_park_positions_path = "data/source/CarParkPos"
+    car_park_positions_path = car_positions_path
 
-    # creating the classifier instance which uses basic image processes to classify
+    # Load the classifier for car park positions
     classifier = Park_classifier(car_park_positions_path, rect_width, rect_height)
 
+    # Load the trained model
     model = load_trained_model(model_path)
 
-    # Implementation of the classy
+    # Open the video file
     cap = cv2.VideoCapture(video_path)
-    while True:
-        # reading the video frame by frame
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    if fps == 0:
+        fps = 30  # Set a default fps if unable to read from the video
+    frame_duration = int(1000 / fps)
+
+    # Initialize status list
+    status_list = ["Unknown"] * len(classifier.car_park_positions)
+
+    # Initialize a lock for accessing the frame
+    frame_lock = threading.Lock()
+
+    # Get the first frame for initial processing
+    ret, frame = cap.read()
+    if not ret:
+        print("Error: Could not read video file.")
+        return
+
+    # Start the status update threads for two groups
+    update_thread_1 = threading.Thread(target=update_status,
+                                       args=(classifier, model, status_list, frame_lock, frame, interval_seconds, 0))
+    update_thread_2 = threading.Thread(target=update_status,
+                                       args=(classifier, model, status_list, frame_lock, frame, interval_seconds, 1))
+    update_thread_1.daemon = True
+    update_thread_1.start()
+    update_thread_2.daemon = True
+    update_thread_2.start()
+
+    # Timer to switch between groups
+    start_time = time.time()
+
+    while cap.isOpened():
+        # Read a frame from the video
         ret, frame = cap.read()
 
-        # check if there is a retval
         if not ret:
             break
 
-        # Preprocess the frame for model input
-        input_frame = preprocess_input_frame(frame)
+        with frame_lock:
+            # Draw rectangles and status text based on the last known status
+            for idx, pos in enumerate(classifier.car_park_positions):
+                # Define the boundaries
+                start = pos
+                end = (pos[0] + rect_width, pos[1] + rect_height)
 
-        # Make predictions using the model
-        predictions = model.predict(input_frame)
+                # Determine the color based on the classification
+                color = (0, 0, 255) if status_list[idx] == "Occupied" else (0, 255, 0)
 
-        # Determine the predicted class based on the prediction
-        status = "Occupied" if predictions[0][0] > 0.5 else "Empty"
+                # Draw the rectangle into the image
+                cv2.rectangle(frame, start, end, color, 2)
 
-        # # processing the frames to prepare classify
-        # processed_frame = classifier.implement_process(frame)
-        #
-        # # classify the current frame
-        # classifier.classify(image=frame, prosessed_image=processed_frame)
+                # Put the index near the rectangle
+                text_position = (start[0], start[1] - 10)  # Adjust as needed for better visibility
+                cv2.putText(frame, f'{idx + 1}', text_position, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
-        # Add counter and draw rectangles with indices
-        for idx, pos in enumerate(classifier.car_park_positions):
-            # defining the boundaries
-            start = pos
-            end = (pos[0] + rect_width, pos[1] + rect_height)
+        # Display the frame with annotations
+        cv2.imshow("Car Park Image (Occupied/Empty)", frame)
 
-            # determine the color based on the classification
-            # color = (0, 255, 0) if not classifier.is_occupied(idx) else (0, 0, 255)
-            color = (0, 255, 0) if not status == "Occupied" else (0, 0, 255)
-
-            # drawing the rectangle into the image
-            cv2.rectangle(frame, start, end, color, 2)
-
-            # putting the index near the rectangle
-            text_position = (start[0], start[1] - 10)  # Adjust as needed for better visibility
-            cv2.putText(frame, f'{idx + 1}', text_position, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-
-        # displaying the results
-        cv2.imshow("Car Park Image which drawn According to empty or occupied", frame)
-
-        # exit condition
-        k = cv2.waitKey(1)
-        if k & 0xFF == ord('q'):
+        # Control the frame rate
+        if cv2.waitKey(frame_duration) & 0xFF == ord('q'):
             break
 
-        if k & 0xFF == ord('s'):
-            cv2.imwrite("data/images/output.jpg", frame)
+        # Check if it's time to switch groups
+        current_time = time.time()
+        if current_time - start_time >= interval_seconds * 2:
+            start_time = current_time
 
-    # re-allocating sources
+    # Release video capture and close all windows
     cap.release()
     cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
     # Define paths to video and model
-    video_path = "data/source/carPark old 1.mp4"
+    video_path = "data/source/carPark small.mp4"
     model_path = "data/results/trained_model.h5"
+    car_positions_path = "data/source/CarParkPos small"
 
     # Run the main function
-    run(video_path, model_path)
+    run(video_path, model_path, car_positions_path)

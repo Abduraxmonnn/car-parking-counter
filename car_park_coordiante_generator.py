@@ -12,13 +12,13 @@ def demostration(
     """
 
     # creating the Coordinate_generator instance for extracting the car park coordinates
-    coordinate_generator = Coordinate_denoter()
+    coordinate_generator = Coordinate_denoter(car_park_positions_path="data/source/CarParkPos small")
 
     # reading and initialing the coordinates
     coordinate_generator.read_positions()
 
     # setting the initial variables
-    image_path = "data/source/example_image.png"
+    image_path = "data/source/example_image small.png"
     rect_width, rect_height = (rectangle_width, rectangle_height) if horizontal else (rectangle_height, rectangle_width)
 
     # serving the GUI window until user terminates it
