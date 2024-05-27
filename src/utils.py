@@ -38,7 +38,7 @@ class Park_classifier():
         image : np.ndarray
             Image which is already processed by opencv digital image processing methods to prepare classify.
         threshold : int, optional
-            It is the boundary value for classifying the alread processed images , by default 900
+            It is the boundary value for classifying the alread processed dataset , by default 900
 
         Returns
         -------

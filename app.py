@@ -1,3 +1,5 @@
+import time
+
 import cv2
 import numpy as np
 from tensorflow.keras.models import load_model
@@ -98,7 +100,7 @@ def run(video_path, model_path, car_positions_path, interval_seconds=3):
     """
     # Define the parameters
     rect_width, rect_height = 90, 40
-    car_park_positions_path = "data/source/CarParkPos"
+    car_park_positions_path = car_positions_path
 
     # Load the classifier for car park positions
     classifier = Park_classifier(car_park_positions_path, rect_width, rect_height)

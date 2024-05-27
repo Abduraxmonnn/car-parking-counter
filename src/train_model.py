@@ -4,10 +4,13 @@ import tensorflow as tf
 from tensorflow.keras import layers, models
 from keras.src.legacy.preprocessing.image import ImageDataGenerator
 
-train_dir = '../data/images/train'
-validation_dir = '../data/images/validation'
+from graphs.model_accuracy_plot import plot_accuracy
+from graphs.model_loss_plot import plot_loss
+
+train_dir = '../data/dataset/train'
+validation_dir = '../data/dataset/validation'
 batch_size = 32
-img_height, img_width = 180, 180
+img_width, img_height = 180, 180
 
 # Use ImageDataGenerator to preprocess and augment training data
 train_datagen = ImageDataGenerator(
@@ -61,7 +64,7 @@ model.compile(optimizer='adam',
 # Display the model summary
 model.summary()
 
-epochs = 10
+epochs = 100
 
 history = model.fit(
     train_generator,
@@ -80,9 +83,6 @@ os.makedirs(save_dir, exist_ok=True)
 # Save the model to the specified path
 model.save('../data/results/trained_model.h5', save_format='h5')
 
-# Plot training and validation accuracy
-import matplotlib.pyplot as plt
-
 acc = history.history['accuracy']
 val_acc = history.history['val_accuracy']
 loss = history.history['loss']
@@ -90,16 +90,30 @@ val_loss = history.history['val_loss']
 
 epochs_range = range(epochs)
 
-plt.figure(figsize=(8, 4))
-plt.subplot(1, 2, 1)
-plt.plot(epochs_range, acc, label='Training Accuracy')
-plt.plot(epochs_range, val_acc, label='Validation Accuracy')
-plt.legend(loc='lower right')
-plt.title('Training and Validation Accuracy')
+plot_accuracy(epochs_range, acc, val_acc)
+plot_loss(epochs_range, loss, val_loss)
 
-plt.subplot(1, 2, 2)
-plt.plot(epochs_range, loss, label='Training Loss')
-plt.plot(epochs_range, val_loss, label='Validation Loss')
-plt.legend(loc='upper right')
-plt.title('Training and Validation Loss')
-plt.show()
+# # Plot training and validation accuracy
+# plt.figure(figsize=(8, 4))
+# plt.subplot(1, 2, 1)
+# plt.plot(epochs_range, acc, label='Training Accuracy')
+# plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+# plt.legend(loc='lower right')
+# plt.title('Training and Validation Accuracy')
+# plt.xlabel('Epoch')
+# plt.ylabel('Accuracy')
+# plt.text(0.5, 0.5, f'Training Accuracy: {acc[-1]:.4f}\nValidation Accuracy: {val_acc[-1]:.4f}',
+#          horizontalalignment='center', verticalalignment='center', transform=plt.gca().transAxes)
+# plt.savefig(os.path.join('data/dataset/results/', 'accuracy_plot.png'))
+#
+# plt.subplot(1, 2, 2)
+# plt.plot(epochs_range, loss, label='Training Loss')
+# plt.plot(epochs_range, val_loss, label='Validation Loss')
+# plt.legend(loc='upper right')
+# plt.title('Training and Validation Loss')
+# plt.xlabel('Epoch')
+# plt.ylabel('Loss')
+# plt.text(0.5, 0.5, f'Training Loss: {loss[-1]:.4f}\nValidation Loss: {val_loss[-1]:.4f}',
+#          horizontalalignment='center', verticalalignment='center', transform=plt.gca().transAxes)
+# plt.savefig(os.path.join('data/dataset/results/', 'loss_plot.png'))
+# plt.show()

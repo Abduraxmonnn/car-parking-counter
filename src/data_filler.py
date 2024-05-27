@@ -11,9 +11,9 @@ def data_filler():
 
     # defining the params
     rect_width, rect_height = 90, 40
-    carp_park_positions_path = "../data/source/CarParkPos"
-    video_path = "../data/source/carPark old 1.mp4"
-    output_dir = "../data/images/new_images/"
+    carp_park_positions_path = "../data/source/CarParkPos small"
+    video_path = "../data/source/carPark small.mp4"
+    output_dir = "../data/dataset/new_images/"
 
     # creating the classifier instance which uses basic image processes to classify
     classifier = Park_classifier(carp_park_positions_path, rect_width, rect_height)
