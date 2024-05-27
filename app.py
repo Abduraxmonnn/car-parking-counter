@@ -183,7 +183,7 @@ def run(video_path, model_path, car_positions_path, interval_seconds=3):
 if __name__ == "__main__":
     # Define paths to video and model
     video_path = "data/source/carPark small.mp4"
-    model_path = "data/results/trained_model.h5"
+    model_path = "data/model/trained_model.h5"
     car_positions_path = "data/source/CarParkPos small"
 
     # Run the main function

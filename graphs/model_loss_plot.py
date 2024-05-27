@@ -15,5 +15,5 @@ def plot_loss(epochs_range, loss, val_loss):
     plt.ylabel('Loss')
     plt.text(0.02, 0.95, f'Training Loss: {loss[-1]:.4f}\nValidation Loss: {val_loss[-1]:.4f}',
              color='black', fontsize=10, transform=plt.gca().transAxes, ha='left')
-    plt.savefig(os.path.join('../data/results/', 'loss_plot.png'))
+    plt.savefig(os.path.join('../data/images/graphs', 'loss_plot.png'))
     plt.show()

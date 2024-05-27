@@ -26,7 +26,7 @@ def data_filler():
     video_path = "../data/source/carPark small.mp4"
     empty_dir = "../data/dataset/new_images/empty"
     occupied_dir = "../data/dataset/new_images/occupied"
-    model_path = "../data/results/trained_model.h5"
+    model_path = "../data/model/trained_model.h5"
 
     # Load the trained model
     model = load_model(model_path)

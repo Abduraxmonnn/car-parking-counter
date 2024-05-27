@@ -90,7 +90,7 @@ if __name__ == "__main__":
     # car_positions_path = "data/source/CarParkPos small"
 
     video_path = "data/source/carPark small.mp4"
-    model_path = "data/results/trained_model.h5"
+    model_path = "data/model/trained_model.h5"
     car_positions_path = "data/source/CarParkPos small"
 
     # Run the main function

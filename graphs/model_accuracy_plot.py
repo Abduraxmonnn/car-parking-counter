@@ -14,5 +14,5 @@ def plot_accuracy(epochs_range, acc, val_acc):
     plt.ylabel('Accuracy')
     plt.text(0.02, 0.95, f'Training Accuracy: {acc[-1]:.4f}\nValidation Accuracy: {val_acc[-1]:.4f}',
              color='black', fontsize=10, transform=plt.gca().transAxes, ha='left')
-    plt.savefig(os.path.join('../data/results/', 'accuracy_plot.png'))
+    plt.savefig(os.path.join('../data/images/graphs', 'accuracy_plot_1.png'))
     plt.show()

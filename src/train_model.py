@@ -1,8 +1,8 @@
 import os
-
 import tensorflow as tf
-from tensorflow.keras import layers, models
-from keras.src.legacy.preprocessing.image import ImageDataGenerator
+from tensorflow.keras import layers, models, regularizers
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.preprocessing.image import ImageDataGenerator  # Corrected import
 
 from graphs.model_accuracy_plot import plot_accuracy
 from graphs.model_loss_plot import plot_loss
@@ -42,6 +42,18 @@ validation_generator = val_datagen.flow_from_directory(
     class_mode='binary'
 )
 
+# Print number of samples in each directory
+num_train_samples = train_generator.samples
+num_val_samples = validation_generator.samples
+
+print(f"Number of training samples: {num_train_samples}")
+print(f"Number of validation samples: {num_val_samples}")
+
+# Calculate steps per epoch
+steps_per_epoch = num_train_samples // batch_size
+validation_steps = num_val_samples // batch_size
+
+# Define the model with Dropout and L2 Regularization
 model = models.Sequential([
     layers.Conv2D(32, (3, 3), activation='relu', input_shape=(img_height, img_width, 3)),
     layers.MaxPooling2D((2, 2)),
@@ -52,7 +64,8 @@ model = models.Sequential([
     layers.Conv2D(128, (3, 3), activation='relu'),
     layers.MaxPooling2D((2, 2)),
     layers.Flatten(),
-    layers.Dense(512, activation='relu'),
+    layers.Dense(512, activation='relu', kernel_regularizer=regularizers.l2(0.001)),
+    layers.Dropout(0.5),  # Dropout layer to prevent overfitting
     layers.Dense(1, activation='sigmoid')  # Use 'sigmoid' for binary classification
 ])
 
@@ -64,56 +77,36 @@ model.compile(optimizer='adam',
 # Display the model summary
 model.summary()
 
+# Set up early stopping
+early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+
 epochs = 100
 
+# Train the model
 history = model.fit(
     train_generator,
-    steps_per_epoch=train_generator.n // batch_size,
+    steps_per_epoch=steps_per_epoch,
     epochs=epochs,
     validation_data=validation_generator,
-    validation_steps=validation_generator.n // batch_size
+    validation_steps=validation_steps,
+    callbacks=[early_stopping]  # Add early stopping to the training process
 )
 
 # Define the directory path to save the model
-save_dir = '../data/results/'
+save_dir = '../data/model/'
 
 # Create the directory if it doesn't exist
 os.makedirs(save_dir, exist_ok=True)
 
 # Save the model to the specified path
-model.save('../data/results/trained_model.h5', save_format='h5')
+model.save('../data/model/trained_model.h5', save_format='h5')
 
 acc = history.history['accuracy']
 val_acc = history.history['val_accuracy']
 loss = history.history['loss']
 val_loss = history.history['val_loss']
 
-epochs_range = range(epochs)
+epochs_range = range(len(acc))  # Use the length of the accuracy list to handle early stopping
 
 plot_accuracy(epochs_range, acc, val_acc)
 plot_loss(epochs_range, loss, val_loss)
-
-# # Plot training and validation accuracy
-# plt.figure(figsize=(8, 4))
-# plt.subplot(1, 2, 1)
-# plt.plot(epochs_range, acc, label='Training Accuracy')
-# plt.plot(epochs_range, val_acc, label='Validation Accuracy')
-# plt.legend(loc='lower right')
-# plt.title('Training and Validation Accuracy')
-# plt.xlabel('Epoch')
-# plt.ylabel('Accuracy')
-# plt.text(0.5, 0.5, f'Training Accuracy: {acc[-1]:.4f}\nValidation Accuracy: {val_acc[-1]:.4f}',
-#          horizontalalignment='center', verticalalignment='center', transform=plt.gca().transAxes)
-# plt.savefig(os.path.join('data/dataset/results/', 'accuracy_plot.png'))
-#
-# plt.subplot(1, 2, 2)
-# plt.plot(epochs_range, loss, label='Training Loss')
-# plt.plot(epochs_range, val_loss, label='Validation Loss')
-# plt.legend(loc='upper right')
-# plt.title('Training and Validation Loss')
-# plt.xlabel('Epoch')
-# plt.ylabel('Loss')
-# plt.text(0.5, 0.5, f'Training Loss: {loss[-1]:.4f}\nValidation Loss: {val_loss[-1]:.4f}',
-#          horizontalalignment='center', verticalalignment='center', transform=plt.gca().transAxes)
-# plt.savefig(os.path.join('data/dataset/results/', 'loss_plot.png'))
-# plt.show()
