@@ -64,3 +64,7 @@ pip install -r requirements.txt
 
 ## Note 
 - CarParkingPos  is a pickle file which stores the empty car parking positions.  The car park areas represented as rectangle and they stored with coordinate of  its top left point.
+- there are 3 files to run with different launch approaches. 
+    - 1) update each car spots every time. (standard)
+    - 2) update each car sport by some time period.
+    - 3) update each car spot by quantity at every given time period.
